@@ -1,0 +1,50 @@
+id = "ashur-d/wallpaper-hub"
+name = "Wallpaper Hub"
+version = "1.0.0"
+plugin_api = 15
+author = "ashur-d"
+license = "MIT"
+icon = "image"
+description = "Cinematic horizontal wallpaper switcher carousel, launcher provider, and bar widget."
+tags = ["bar", "launcher", "panel", "shortcut", "wallpaper"]
+dependencies = []
+
+[[setting]]
+key = "wallpaper_dir"
+type = "folder"
+label_key = "settings.wallpaper_dir.label"
+description_key = "settings.wallpaper_dir.description"
+
+
+[[setting]]
+key = "notify_on_change"
+type = "bool"
+label_key = "settings.notify_on_change.label"
+description_key = "settings.notify_on_change.description"
+default = true
+
+[[panel]]
+id = "hub"
+entry = "panel.luau"
+width = 1160
+height = 420
+placement = "floating"
+position = "center"
+dismiss_on_outside_click = true
+keyboard_focus = "exclusive"
+capture_keys = ["Left", "Right", "Up", "Down", "Return", "Escape", "Space"]
+
+[[launcher_provider]]
+id = "provider"
+entry = "launcher_provider.luau"
+prefix = "wall"
+glyph = "image"
+include_in_global_search = false
+
+[[widget]]
+id = "widget"
+entry = "widget.luau"
+
+[[shortcut]]
+id = "toggle"
+entry = "shortcut.luau"
