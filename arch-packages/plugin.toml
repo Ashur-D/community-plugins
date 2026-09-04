@@ -1,0 +1,80 @@
+id = "ashur-d/arch-packages"
+name = "Arch Packages"
+version = "1.0.0"
+plugin_api = 15
+author = "ashur-d"
+license = "MIT"
+icon = "package"
+description = "Search, install, and remove Arch Linux & AUR packages, manage installed apps, and clean orphaned dependencies."
+tags = ["arch", "bar", "launcher", "panel", "shortcut", "system", "utility"]
+dependencies = ["pacman"]
+
+[[setting]]
+key = "aur_helper"
+type = "select"
+label_key = "settings.aur_helper.label"
+description_key = "settings.aur_helper.description"
+default = "auto"
+options = [
+  { value = "auto", label_key = "settings.aur_helper.options.auto" },
+  { value = "yay", label_key = "settings.aur_helper.options.yay" },
+  { value = "paru", label_key = "settings.aur_helper.options.paru" },
+  { value = "pacman", label_key = "settings.aur_helper.options.pacman" },
+]
+
+[[setting]]
+key = "use_terminal"
+type = "bool"
+label_key = "settings.use_terminal.label"
+description_key = "settings.use_terminal.description"
+default = false
+
+[[setting]]
+key = "terminal_cmd"
+type = "string"
+label_key = "settings.terminal_cmd.label"
+description_key = "settings.terminal_cmd.description"
+default = ""
+
+[[setting]]
+key = "notify_on_action"
+type = "bool"
+label_key = "settings.notify_on_action.label"
+description_key = "settings.notify_on_action.description"
+default = true
+
+[[panel]]
+id = "hub"
+entry = "panel.luau"
+width = 860
+height = 600
+placement = "attached"
+position = "auto"
+open_near_click = true
+dismiss_on_outside_click = true
+keyboard_focus = "on_demand"
+capture_keys = ["Return", "Escape", "Tab", "Down", "Up"]
+
+[[launcher_provider]]
+id = "provider"
+entry = "launcher_provider.luau"
+prefix = "pkg"
+glyph = "package"
+debounce_ms = 250
+include_in_global_search = false
+
+[[launcher_provider]]
+id = "update"
+entry = "update_launcher.luau"
+prefix = "update"
+glyph = "refresh"
+debounce_ms = 200
+include_in_global_search = false
+
+[[widget]]
+id = "widget"
+entry = "widget.luau"
+
+[[shortcut]]
+id = "toggle"
+entry = "shortcut.luau"

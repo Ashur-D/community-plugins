@@ -1,0 +1,122 @@
+{
+  "settings": {
+    "aur_helper": {
+      "label": "AUR Helper",
+      "description": "Package manager helper for operations.",
+      "options": {
+        "auto": "Auto (detect yay or paru)",
+        "yay": "yay",
+        "paru": "paru",
+        "pacman": "pacman (official repos only)"
+      }
+    },
+    "use_terminal": {
+      "label": "Use Terminal",
+      "description": "Run operations in a terminal instead of Polkit."
+    },
+    "terminal_cmd": {
+      "label": "Terminal Command",
+      "description": "Custom terminal launch command (optional)."
+    },
+    "notify_on_action": {
+      "label": "Desktop Notifications",
+      "description": "Show notification when an action finishes."
+    }
+  },
+  "panel": {
+    "title": "Arch Packages",
+    "search_placeholder": "Search packages (e.g. ripgrep, neovim, hyprland)...",
+    "tabs": {
+      "explore": "Explore",
+      "installed": "Installed",
+      "updates": "Updates",
+      "orphans": "Orphans"
+    },
+    "buttons": {
+      "install": "Install",
+      "remove": "Remove",
+      "update": "Update",
+      "upgrade_all": "Upgrade All",
+      "details": "Details",
+      "clean_orphans": "Clean All Orphans",
+      "refresh": "Refresh",
+      "clear": "Clear",
+      "cancel": "Cancel",
+      "confirm_remove": "Confirm Removal",
+      "confirm_clean": "Clean Orphans"
+    },
+    "badges": {
+      "installed": "Installed",
+      "orphan": "Orphan"
+    },
+    "confirm": {
+      "remove_title": "Remove Package",
+      "remove_desc": "Are you sure you want to remove {name}? This will remove the package and unneeded dependencies.",
+      "clean_title": "Clean Orphan Packages",
+      "clean_desc": "Are you sure you want to clean all {count} orphaned dependencies? This will safely reclaim disk space."
+    },
+    "status": {
+      "loading": "Loading packages...",
+      "searching": "Searching repositories & AUR...",
+      "empty_search": "Type to search official repositories and the AUR.",
+      "no_search_results": "No packages found matching your search.",
+      "rate_limited": "AUR search rate limit reached. Please wait a moment and try again.",
+      "no_installed": "No installed packages found.",
+      "no_orphans": "No orphan dependencies found. System is clean!",
+      "orphans_banner": "Unused dependencies that were installed as requirements but are no longer needed.",
+      "checking_updates": "Checking for package updates...",
+      "no_updates": "Your system is completely up to date!",
+      "no_updates_desc": "All installed official and AUR packages are running the latest versions.",
+      "count_installed": "{count} installed packages",
+      "count_orphans": "{count} orphans found",
+      "count_updates": "{count} updates available",
+      "count_results": "{count} packages found",
+      "hints": "Enter: act  ·  Tab: switch tabs  ·  Esc: close"
+    },
+    "details": {
+      "title": "Package Details",
+      "version": "Version",
+      "repo": "Repository",
+      "size": "Installed Size",
+      "url": "Upstream URL",
+      "licenses": "Licenses",
+      "packager": "Packager",
+      "build_date": "Build Date",
+      "depends": "Dependencies",
+      "open_url": "Open Website"
+    },
+    "trust": {
+      "verified_official": "Verified Official",
+      "official_desc": "Official Arch Linux package. Maintained and cryptographically signed.",
+      "orphaned": "Orphaned",
+      "reputation_title": "Safety & Community Reputation",
+      "inspect_aur": "Inspect PKGBUILD on AUR"
+    }
+  },
+  "launcher": {
+    "title": "Arch Packages",
+    "placeholder": "Search packages to install...",
+    "action_install": "Install with {helper}",
+    "action_remove": "Remove package",
+    "installed": "Installed"
+  },
+  "widget": {
+    "tooltip": "Arch Packages\n{installed} installed  ·  {updates} updates  ·  {orphans} orphans\nClick to open manager"
+  },
+  "shortcut": {
+    "label": "Toggle Arch Packages"
+  },
+  "notify": {
+    "installing": "Installing {name}...",
+    "installed": "Successfully installed {name}",
+    "install_failed": "Failed to install {name}",
+    "removing": "Removing {name}...",
+    "removed": "Successfully uninstalled {name}",
+    "upgrading": "Upgrading system packages...",
+    "upgraded": "System upgrade complete",
+    "upgrade_failed": "System upgrade failed",
+    "remove_failed": "Failed to uninstall {name}",
+    "cleaning_orphans": "Cleaning orphan packages...",
+    "cleaned_orphans": "Successfully cleaned orphan packages"
+  }
+}
