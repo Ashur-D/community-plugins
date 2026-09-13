@@ -8,6 +8,8 @@ local currentWallpaper = ""
 local isScanning = false
 local scanError = nil
 local navToken = 0
+local generatingPending = {}
+local batchRunning = false
 
 local function tr(key, args)
   return noctalia.tr(key, args)
@@ -21,6 +23,108 @@ local function makeSortKey(s)
   local lower = s:lower()
   return lower:gsub("%d+", function(n)
     return string.format("%08d", tonumber(n) or 0)
+  end)
+end
+
+-- Resolve cache directory for downscaled thumbnails
+local home = (noctalia.getenv and noctalia.getenv("HOME")) or os.getenv("HOME") or "/tmp"
+local xdgCache = (noctalia.getenv and noctalia.getenv("XDG_CACHE_HOME")) or os.getenv("XDG_CACHE_HOME")
+local cacheDir = (xdgCache and xdgCache ~= "" and xdgCache or (home .. "/.cache")) .. "/noctalia/wallpaper-hub/thumbnails"
+
+local cacheDirPrepared = false
+local function ensureCacheDir()
+  if cacheDirPrepared then return end
+  cacheDirPrepared = true
+  if not noctalia.fileExists(cacheDir) then
+    noctalia.runAsync("mkdir -p " .. shellQuote(cacheDir))
+  end
+end
+
+-- Deterministic FNV-1a hash for wallpaper thumbnails
+local function getThumbPath(wallpaperPath)
+  local h = 2166136261
+  for i = 1, #wallpaperPath do
+    h = bit32.bxor(h, string.byte(wallpaperPath, i))
+    h = bit32.band(h * 16777619, 0xFFFFFFFF)
+  end
+  local base = wallpaperPath:match("([^/]+)%.[^.]+$") or "wp"
+  local safeBase = base:gsub("[^%w_%-]", "_"):sub(1, 24)
+  return string.format("%s/%s_%08x.jpg", cacheDir, safeBase, h)
+end
+
+local function makeGenerateCmd(src, dst)
+  return string.format(
+    "nice -n 19 sh -c 'if command -v magick >/dev/null 2>&1; then magick %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v convert >/dev/null 2>&1; then convert %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v ffmpeg >/dev/null 2>&1; then ffmpeg -y -i %s -vf \"scale=512:288:force_original_aspect_ratio=decrease\" %s >/dev/null 2>&1; fi'",
+    shellQuote(src), shellQuote(dst),
+    shellQuote(src), shellQuote(dst),
+    shellQuote(src), shellQuote(dst)
+  )
+end
+
+local render -- forward declaration
+
+local function resolveDisplayPath(originalPath)
+  if not originalPath or originalPath == "" then return originalPath end
+  ensureCacheDir()
+  local thumb = getThumbPath(originalPath)
+  if noctalia.fileExists(thumb) then
+    return thumb
+  end
+
+  -- On-demand generation for immediate preview if missing from cache
+  if not generatingPending[originalPath] then
+    generatingPending[originalPath] = true
+    local cmd = makeGenerateCmd(originalPath, thumb)
+    noctalia.runAsync(cmd, function()
+      generatingPending[originalPath] = nil
+      if noctalia.fileExists(thumb) then
+        render()
+      end
+    end)
+  end
+
+  return originalPath
+end
+
+local function triggerBatchThumbnails()
+  if batchRunning or #allWallpapers == 0 then return end
+  ensureCacheDir()
+
+  local missing = {}
+  for _, wp in ipairs(allWallpapers) do
+    local thumb = getThumbPath(wp.path)
+    if not noctalia.fileExists(thumb) then
+      table.insert(missing, wp.path .. "\t" .. thumb)
+    end
+  end
+
+  if #missing == 0 then return end
+  batchRunning = true
+
+  local scriptParts = {
+    "nice -n 19 sh -c '",
+    "if command -v magick >/dev/null 2>&1; then GEN=magick; ",
+    "elif command -v convert >/dev/null 2>&1; then GEN=convert; ",
+    "elif command -v ffmpeg >/dev/null 2>&1; then GEN=ffmpeg; ",
+    "else exit 0; fi; ",
+  }
+
+  for _, item in ipairs(missing) do
+    local src, dst = item:match("([^\t]+)\t([^\t]+)")
+    if src and dst then
+      table.insert(scriptParts, string.format(
+        'if [ ! -f %s ]; then if [ "$GEN" = "ffmpeg" ]; then ffmpeg -y -i %s -vf "scale=512:288:force_original_aspect_ratio=decrease" %s >/dev/null 2>&1; else "$GEN" %s -thumbnail 512x288\\> %s >/dev/null 2>&1; fi; fi; ',
+        shellQuote(dst), shellQuote(src), shellQuote(dst), shellQuote(src), shellQuote(dst)
+      ))
+    end
+  end
+
+  table.insert(scriptParts, "'")
+  local batchCmd = table.concat(scriptParts)
+
+  noctalia.runAsync(batchCmd, function()
+    batchRunning = false
+    render()
   end)
 end
 
@@ -135,6 +239,7 @@ local function loadWallpapers(forceRescan)
       currentWallpaper = active
       syncSelectedIndexToActive()
     end
+    triggerBatchThumbnails()
     render()
     return
   end
@@ -163,6 +268,7 @@ local function loadWallpapers(forceRescan)
           })
         end
         allWallpapers = fallbackList
+        triggerBatchThumbnails()
       else
         allWallpapers = {}
         scanError = tr("panel.empty")
@@ -178,6 +284,7 @@ local function loadWallpapers(forceRescan)
     end)
     allWallpapers = list
     isScanning = false
+    triggerBatchThumbnails()
     refreshActiveWallpaper(function()
       syncSelectedIndexToActive()
       render()
@@ -210,6 +317,16 @@ local function applyRandom()
   applyWallpaper(allWallpapers[randIdx].path)
 end
 
+local function cardsCached(centerIdx)
+  local total = #allWallpapers
+  if total == 0 then return true end
+  local leftIdx = ((centerIdx - 2 + total) % total) + 1
+  local rightIdx = (centerIdx % total) + 1
+  return noctalia.fileExists(getThumbPath(allWallpapers[centerIdx].path))
+     and noctalia.fileExists(getThumbPath(allWallpapers[leftIdx].path))
+     and noctalia.fileExists(getThumbPath(allWallpapers[rightIdx].path))
+end
+
 local function scheduleDisplay()
   navToken = navToken + 1
   local currentToken = navToken
@@ -217,8 +334,8 @@ local function scheduleDisplay()
   -- Update index counter and badge immediately with zero input latency
   render()
 
-  -- Debounce heavy 4K image decodes during fast multi-key browsing
-  noctalia.runAsync({"sleep", "0.045"}, function()
+  -- Fallback debounce for heavy full-resolution images while thumbnails generate
+  noctalia.runAsync({"sleep", "0.040"}, function()
     if navToken == currentToken then
       displayedIndex = selectedIndex
       render()
@@ -230,7 +347,14 @@ local function stepSelection(delta)
   local total = #allWallpapers
   if total == 0 then return end
   selectedIndex = ((selectedIndex - 1 + delta) % total) + 1
-  scheduleDisplay()
+
+  -- Instant 60 FPS update when thumbnails are cached; debounce only if unbuilt full-res
+  if cardsCached(selectedIndex) then
+    displayedIndex = selectedIndex
+    render()
+  else
+    scheduleDisplay()
+  end
 end
 
 render = function()
@@ -292,7 +416,7 @@ render = function()
     }, {
       ui.image({
         key = "img-left",
-        path = wpLeft.path,
+        path = resolveDisplayPath(wpLeft.path),
         width = 280,
         height = 158,
         fit = "cover",
@@ -313,7 +437,7 @@ render = function()
     }, {
       ui.image({
         key = "img-center",
-        path = wpCenter.path,
+        path = resolveDisplayPath(wpCenter.path),
         width = 460,
         height = 259,
         fit = "cover",
@@ -337,7 +461,7 @@ render = function()
     }, {
       ui.image({
         key = "img-right",
-        path = wpRight.path,
+        path = resolveDisplayPath(wpRight.path),
         width = 280,
         height = 158,
         fit = "cover",
@@ -412,12 +536,22 @@ function onKey(chord, pressed)
   elseif chord == "Home" then
     if #allWallpapers > 0 then
       selectedIndex = 1
-      scheduleDisplay()
+      if cardsCached(1) then
+        displayedIndex = 1
+        render()
+      else
+        scheduleDisplay()
+      end
     end
   elseif chord == "End" then
     if #allWallpapers > 0 then
       selectedIndex = #allWallpapers
-      scheduleDisplay()
+      if cardsCached(#allWallpapers) then
+        displayedIndex = #allWallpapers
+        render()
+      else
+        scheduleDisplay()
+      end
     end
   elseif chord == "Return" then
     if #allWallpapers > 0 and selectedIndex >= 1 and selectedIndex <= #allWallpapers then

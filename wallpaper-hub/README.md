@@ -47,6 +47,13 @@ Add the `widget` entry to your Noctalia bar:
 
 Add the `toggle` shortcut to your Control Center to toggle the hub panel with a single click.
 
+### Performance & Background Thumbnail Caching
+
+Wallpaper Hub automatically generates and caches downscaled 512x288 thumbnails in `~/.cache/noctalia/wallpaper-hub/thumbnails/` for buttery-smooth 60 FPS carousel navigation:
+- **Low-Priority Background Processing**: Runs thumbnail jobs in the background with `nice -n 19` so your desktop compositor and user input never hitch.
+- **Auto-Detection**: Automatically detects `magick` (ImageMagick 7), `convert` (ImageMagick 6), or `ffmpeg`.
+- **Graceful Fallback**: If none of these image utilities are installed, Wallpaper Hub falls back to original wallpaper files with zero required dependencies.
+
 ## Settings
 
 Configure Wallpaper Hub in **Settings -> Plugins -> Wallpaper Hub**:
