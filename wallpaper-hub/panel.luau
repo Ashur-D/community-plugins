@@ -2,10 +2,12 @@
 -- Wallpaper Hub — Cinematic 3-card horizontal carousel wallpaper switcher
 
 local selectedIndex = 1
+local displayedIndex = 1
 local allWallpapers = {}
 local currentWallpaper = ""
 local isScanning = false
 local scanError = nil
+local navToken = 0
 
 local function tr(key, args)
   return noctalia.tr(key, args)
@@ -92,10 +94,10 @@ end
 
 local render -- forward declaration
 
-local function getWallpaperAt(offset)
+local function getDisplayedWallpaperAt(offset)
   local total = #allWallpapers
   if total == 0 then return nil, 1 end
-  local idx = ((selectedIndex - 1 + offset) % total) + 1
+  local idx = ((displayedIndex - 1 + offset) % total) + 1
   return allWallpapers[idx], idx
 end
 
@@ -104,6 +106,7 @@ local function syncSelectedIndexToActive()
   for i, wp in ipairs(allWallpapers) do
     if wp.path == currentWallpaper then
       selectedIndex = i
+      displayedIndex = i
       return
     end
   end
@@ -203,14 +206,31 @@ local function applyRandom()
   if #allWallpapers == 0 then return end
   local randIdx = math.random(1, #allWallpapers)
   selectedIndex = randIdx
+  displayedIndex = randIdx
   applyWallpaper(allWallpapers[randIdx].path)
+end
+
+local function scheduleDisplay()
+  navToken = navToken + 1
+  local currentToken = navToken
+
+  -- Update index counter and badge immediately with zero input latency
+  render()
+
+  -- Debounce heavy 4K image decodes during fast multi-key browsing
+  noctalia.runAsync({"sleep", "0.045"}, function()
+    if navToken == currentToken then
+      displayedIndex = selectedIndex
+      render()
+    end
+  end)
 end
 
 local function stepSelection(delta)
   local total = #allWallpapers
   if total == 0 then return end
   selectedIndex = ((selectedIndex - 1 + delta) % total) + 1
-  render()
+  scheduleDisplay()
 end
 
 render = function()
@@ -245,11 +265,11 @@ render = function()
     return
   end
 
-  local wpLeft, idxLeft = getWallpaperAt(-1)
-  local wpCenter, idxCenter = getWallpaperAt(0)
-  local wpRight, idxRight = getWallpaperAt(1)
+  local wpLeft, idxLeft = getDisplayedWallpaperAt(-1)
+  local wpCenter, idxCenter = getDisplayedWallpaperAt(0)
+  local wpRight, idxRight = getDisplayedWallpaperAt(1)
 
-  local isCenterActive = (wpCenter.path == currentWallpaper)
+  local isSelectedActive = (#allWallpapers > 0 and allWallpapers[selectedIndex].path == currentWallpaper)
 
   -- Cinematic 3-Card Carousel
   local carouselRow = ui.row({
@@ -260,15 +280,18 @@ render = function()
   }, {
     -- Previous Wallpaper Preview (Left)
     ui.column({
+      key = "card-left",
       align = "center",
       width = 280,
       opacity = 0.55,
       onClick = function()
         selectedIndex = idxLeft
+        displayedIndex = idxLeft
         render()
       end,
     }, {
       ui.image({
+        key = "img-left",
         path = wpLeft.path,
         width = 280,
         height = 158,
@@ -281,6 +304,7 @@ render = function()
 
     -- Current Focused Wallpaper (Center Spotlight)
     ui.column({
+      key = "card-center",
       align = "center",
       width = 460,
       onClick = function()
@@ -288,27 +312,31 @@ render = function()
       end,
     }, {
       ui.image({
+        key = "img-center",
         path = wpCenter.path,
         width = 460,
         height = 259,
         fit = "cover",
         radius = 16,
-        borderWidth = isCenterActive and 3 or 1,
-        border = isCenterActive and "primary" or "outline",
+        borderWidth = (wpCenter.path == currentWallpaper) and 3 or 1,
+        border = (wpCenter.path == currentWallpaper) and "primary" or "outline",
       }),
     }),
 
     -- Next Wallpaper Preview (Right)
     ui.column({
+      key = "card-right",
       align = "center",
       width = 280,
       opacity = 0.55,
       onClick = function()
         selectedIndex = idxRight
+        displayedIndex = idxRight
         render()
       end,
     }, {
       ui.image({
+        key = "img-right",
         path = wpRight.path,
         width = 280,
         height = 158,
@@ -331,7 +359,7 @@ render = function()
       justify = "center",
       height = 22,
     }, {
-      isCenterActive and ui.row({
+      isSelectedActive and ui.row({
         align = "center",
         gap = 4,
         paddingH = 8,
@@ -344,9 +372,9 @@ render = function()
       }) or nil,
     }),
 
-    -- Index counter
+    -- Index counter (reflects selected index in real time)
     ui.label({
-      text = tostring(idxCenter) .. " / " .. tostring(#allWallpapers),
+      text = tostring(selectedIndex) .. " / " .. tostring(#allWallpapers),
       fontSize = 12,
       color = "on_surface_variant",
     }),
@@ -384,15 +412,16 @@ function onKey(chord, pressed)
   elseif chord == "Home" then
     if #allWallpapers > 0 then
       selectedIndex = 1
-      render()
+      scheduleDisplay()
     end
   elseif chord == "End" then
     if #allWallpapers > 0 then
       selectedIndex = #allWallpapers
-      render()
+      scheduleDisplay()
     end
   elseif chord == "Return" then
     if #allWallpapers > 0 and selectedIndex >= 1 and selectedIndex <= #allWallpapers then
+      displayedIndex = selectedIndex
       applyWallpaper(allWallpapers[selectedIndex].path)
     end
   elseif chord == "Space" or chord == "r" or chord == "R" then
@@ -424,6 +453,7 @@ function onOpen(_context)
 
   -- If we already have wallpapers in memory, render immediately with 0ms delay!
   if #allWallpapers > 0 then
+    displayedIndex = selectedIndex
     render()
   else
     loadWallpapers(false)
