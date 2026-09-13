@@ -1,5 +1,5 @@
 --!nonstrict
--- Wallpaper Hub — Cinematic 3-card horizontal carousel wallpaper switcher
+-- Wallpaper Widget — Cinematic 3-card horizontal carousel wallpaper switcher
 
 local selectedIndex = 1
 local displayedIndex = 1
@@ -31,7 +31,7 @@ end
 -- Resolve cache directory for downscaled thumbnails
 local home = noctalia.getenv("HOME") or "~"
 local xdgCache = noctalia.getenv("XDG_CACHE_HOME")
-local cacheDir = (xdgCache and xdgCache ~= "" and xdgCache or (home .. "/.cache")) .. "/noctalia/wallpaper-hub/thumbnails"
+local cacheDir = (xdgCache and xdgCache ~= "" and xdgCache or (home .. "/.cache")) .. "/noctalia/wallpaper-widget/thumbnails"
 
 local cacheDirPrepared = false
 local function ensureCacheDir()
@@ -562,10 +562,8 @@ function onKey(chord, pressed)
       displayedIndex = selectedIndex
       applyWallpaper(allWallpapers[selectedIndex].path)
     end
-  elseif chord == "Space" or chord == "r" or chord == "R" then
+  elseif chord == "Space" then
     applyRandom()
-  elseif chord == "F5" then
-    loadWallpapers(true)
   elseif chord == "Escape" then
     panel.close()
   end

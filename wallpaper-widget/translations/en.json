@@ -10,12 +10,11 @@
     },
     "close_on_apply": {
       "label": "Close on Apply",
-      "description": "Automatically close the Wallpaper Hub carousel after applying a wallpaper."
+      "description": "Automatically close the Wallpaper Widget carousel after applying a wallpaper."
     }
   },
   "panel": {
-    "title": "Wallpaper Hub",
-    "search_placeholder": "Filter wallpapers... (or use /wall)",
+    "title": "Wallpaper Widget",
     "random": "Random",
     "prev": "Previous",
     "next": "Next",
@@ -28,19 +27,11 @@
     "empty_hint": "Add images (.png, .jpg, .jpeg, .webp) to your wallpapers folder.",
     "no_matches": "No wallpapers match your filter."
   },
-  "launcher": {
-    "random": "Random Wallpaper",
-    "random_desc": "Switch to a randomly chosen wallpaper",
-    "next": "Next Wallpaper",
-    "next_desc": "Switch to the next wallpaper",
-    "prev": "Previous Wallpaper",
-    "prev_desc": "Switch to the previous wallpaper"
-  },
   "widget": {
-    "tooltip": "Wallpaper Hub\nClick: Open Hub  ·  Scroll: Next/Prev  ·  Right-click: Random"
+    "tooltip": "Wallpaper Widget\nClick: Open Widget  ·  Scroll: Next/Prev  ·  Right-click: Random"
   },
   "shortcut": {
-    "label": "Toggle Wallpaper Hub"
+    "label": "Toggle Wallpaper Widget"
   },
   "notify": {
     "switched": "Wallpaper Switched"

@@ -1,5 +1,5 @@
 --!nonstrict
--- Wallpaper Hub — Bar widget
+-- Wallpaper Widget — Bar widget
 
 local function tr(key, args)
   return noctalia.tr(key, args)
@@ -43,7 +43,7 @@ function update()
 end
 
 function onClick()
-  noctalia.togglePanel("ashur-d/wallpaper-hub:hub")
+  noctalia.togglePanel("ashur-d/wallpaper-widget:hub")
 end
 
 function onRightClick()

@@ -1,12 +1,12 @@
-id = "ashur-d/wallpaper-hub"
-name = "Wallpaper Hub"
+id = "ashur-d/wallpaper-widget"
+name = "Wallpaper Widget"
 version = "1.0.0"
 plugin_api = 15
 author = "ashur-d"
 license = "MIT"
 icon = "image"
-description = "Cinematic horizontal wallpaper switcher carousel, launcher provider, and bar widget."
-tags = ["bar", "launcher", "panel", "shortcut", "wallpaper"]
+description = "Cinematic horizontal wallpaper switcher carousel and bar widget."
+tags = ["bar", "panel", "shortcut", "wallpaper"]
 dependencies = []
 
 [[setting]]
@@ -40,13 +40,6 @@ position = "center"
 dismiss_on_outside_click = true
 keyboard_focus = "exclusive"
 capture_keys = ["Left", "Right", "Up", "Down", "Return", "Escape", "Space"]
-
-[[launcher_provider]]
-id = "provider"
-entry = "launcher_provider.luau"
-prefix = "wall"
-glyph = "image"
-include_in_global_search = false
 
 [[widget]]
 id = "widget"
