@@ -1,6 +1,6 @@
 # Wallpaper Hub
 
-A visual wallpaper switcher hub featuring a 4-column thumbnail grid, quick launcher provider, and interactive bar widget.
+A cinematic horizontal wallpaper switcher carousel, quick launcher provider, and interactive bar widget for Noctalia.
 
 ## Plugin
 
@@ -14,31 +14,31 @@ A visual wallpaper switcher hub featuring a 4-column thumbnail grid, quick launc
 
 Wallpaper Hub provides three convenient ways to browse and switch your desktop wallpapers:
 
-### Visual Grid Panel
+### Visual Carousel Panel
 
-Open the floating grid panel directly or bind it to a custom compositor keybind:
+Open the floating carousel panel directly or bind it to a custom compositor keybind:
 
 ```sh
 noctalia msg panel-toggle ashur-d/wallpaper-hub:hub
 ```
 
-- **Thumbnail Grid**: Browse 16:9 thumbnails of all your local wallpapers.
-- **Active Indicator**: The currently active wallpaper is highlighted with a primary border and checkmark badge.
-- **Search Bar**: Type to quickly filter wallpapers by name as you type.
-- **Actions**: Quick buttons for Random (🎲), Next (➡), Previous (⬅), and Refresh (🔄).
-- **Instant Switch**: Click any card to apply the wallpaper immediately. Noctalia automatically transitions and recalculates Material You M3 palettes.
+- **Cinematic Carousel**: Focus on your wallpapers with an active center spotlight card and adjacent previews.
+- **Active Indicator**: The currently active wallpaper is highlighted with a primary accent border and active badge.
+- **Fast Keyboard Navigation**: Browse with `Left` / `Right` arrows, jump with `PageUp` / `PageDown` or `Home` / `End`, and apply with `Enter`.
+- **Quick Actions**: Press `Space` or `r` to instantly apply a random wallpaper, or `F5` to rescan.
+- **Instant Switch**: Uses in-process wallpaper switching for seamless transitions with zero latency.
 
 ### Launcher Provider
 
 Type `/wall` in the Noctalia launcher:
 - An empty query displays quick switcher actions: Random Wallpaper, Next Wallpaper, and Previous Wallpaper, followed by your wallpaper catalog.
-- Type `/wall <query>` to fuzzy match and filter wallpapers by name.
-- Press **Enter** on any result to apply that wallpaper.
+- Type `/wall <query>` to instantly fuzzy-match and filter wallpapers by name.
+- Press **Enter** on any result to apply that wallpaper immediately.
 
 ### Bar Widget
 
 Add the `widget` entry to your Noctalia bar:
-- **Left click**: Toggles the Wallpaper Hub panel.
+- **Left click**: Toggles the Wallpaper Hub carousel panel.
 - **Right click**: Immediately picks and applies a random wallpaper.
 - **Scroll wheel up / down**: Cycles to the next or previous wallpaper.
 - **Tooltip**: Displays the currently active wallpaper filename and control tips.

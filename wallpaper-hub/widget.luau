@@ -5,19 +5,36 @@ local function tr(key, args)
   return noctalia.tr(key, args)
 end
 
+local function getCurrentWallpaper()
+  if noctalia.wallpaperPath then
+    local out = noctalia.focusedOutputName and noctalia.focusedOutputName()
+    if out then
+      local path = noctalia.wallpaperPath(out)
+      if path and path ~= "" then return path end
+    end
+    if noctalia.outputs then
+      for _, o in ipairs(noctalia.outputs()) do
+        if o.name then
+          local path = noctalia.wallpaperPath(o.name)
+          if path and path ~= "" then return path end
+        end
+      end
+    end
+  end
+  return nil
+end
+
 local function updateTooltip()
-  noctalia.runAsync("noctalia msg wallpaper-get", function(result)
-    local current = ""
-    if result and result.exitCode == 0 and result.stdout then
-      local path = result.stdout:gsub("%s+$", "")
-      current = path:match("([^/]+)$") or path
-    end
-    local tooltip = tr("widget.tooltip")
-    if current ~= "" then
-      tooltip = current .. "\n\n" .. tooltip
-    end
-    barWidget.setTooltip(tooltip)
-  end, 2000)
+  local current = ""
+  local active = getCurrentWallpaper()
+  if active and active ~= "" then
+    current = active:match("([^/]+)$") or active
+  end
+  local tooltip = tr("widget.tooltip")
+  if current ~= "" then
+    tooltip = current .. "\n\n" .. tooltip
+  end
+  barWidget.setTooltip(tooltip)
 end
 
 function update()
@@ -38,8 +55,16 @@ function onRightClick()
   end)
 end
 
+local lastScrollTime = 0
+
 function onScroll(axis, steps, startsGesture)
   if axis ~= "vertical" or startsGesture then return end
+  local now = os.clock()
+  if now - lastScrollTime < 0.15 then
+    return -- Debounce rapid scroll bursts
+  end
+  lastScrollTime = now
+
   if (steps or 0) > 0 then
     noctalia.runAsync("noctalia msg wallpaper-next", function()
       updateTooltip()

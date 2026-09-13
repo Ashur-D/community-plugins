@@ -32,7 +32,7 @@ placement = "floating"
 position = "center"
 dismiss_on_outside_click = true
 keyboard_focus = "exclusive"
-capture_keys = ["Left", "Right", "Up", "Down", "Return", "Escape", "Space"]
+capture_keys = ["Left", "Right", "Up", "Down", "Return", "Escape", "Space", "PageUp", "PageDown", "Home", "End", "r", "R"]
 
 [[launcher_provider]]
 id = "provider"

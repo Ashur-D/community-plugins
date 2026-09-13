@@ -17,13 +17,12 @@
     "next": "Next",
     "refresh": "Refresh",
     "close": "Close",
-    "page": "Page {page} / {pages}",
-    "prev_page": "Previous Page",
-    "next_page": "Next Page",
-    "active": "Active",
+    "loading": "Loading wallpapers...",
+    "active": "ACTIVE",
+    "hint": "←  → to browse   ·   Enter to apply   ·   Space for random   ·   Esc to close",
     "empty": "No wallpapers found in directory.",
-    "no_matches": "No wallpapers match your filter.",
-    "tip": "Tip: Scroll on the bar widget to cycle wallpapers, or use /wall in launcher."
+    "empty_hint": "Add images (.png, .jpg, .jpeg, .webp) to your wallpapers folder.",
+    "no_matches": "No wallpapers match your filter."
   },
   "launcher": {
     "random": "Random Wallpaper",
