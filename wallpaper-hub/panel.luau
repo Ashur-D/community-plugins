@@ -344,14 +344,6 @@ render = function()
       }) or nil,
     }),
 
-    -- Focused wallpaper name
-    ui.label({
-      text = wpCenter.name,
-      fontSize = 15,
-      fontWeight = "bold",
-      color = "on_surface",
-    }),
-
     -- Index counter
     ui.label({
       text = tostring(idxCenter) .. " / " .. tostring(#allWallpapers),
