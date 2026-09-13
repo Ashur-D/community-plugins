@@ -47,7 +47,13 @@ end
 function onRightClick()
   noctalia.runAsync("noctalia msg wallpaper-random", function()
     if noctalia.getConfig("notify_on_change") ~= false then
-      noctalia.notify(tr("panel.title"), tr("notify.switched"))
+      local active = getCurrentWallpaper()
+      local fname = active and (active:match("([^/]+)$") or active) or ""
+      if fname ~= "" then
+        noctalia.notify(tr("panel.title"), tr("notify.switched") .. ": " .. fname)
+      else
+        noctalia.notify(tr("panel.title"), tr("notify.switched"))
+      end
     end
     updateTooltip()
   end)

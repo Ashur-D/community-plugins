@@ -3,7 +3,6 @@ local displayedIndex = 1
 local allWallpapers = {}
 local currentWallpaper = ""
 local isScanning = false
-local scanError = nil
 local navToken = 0
 local generatingPending = {}
 local batchRunning = false
@@ -43,7 +42,9 @@ local function getThumbPath(wallpaperPath)
   local h = 2166136261
   for i = 1, #wallpaperPath do
     h = bit32.bxor(h, string.byte(wallpaperPath, i))
-    h = bit32.band(h * 16777619, 0xFFFFFFFF)
+    local lo = bit32.band(h, 0xFFFF) * 16777619
+    local hi = bit32.band(bit32.rshift(h, 16), 0xFFFF) * 16777619
+    h = bit32.band(lo + bit32.lshift(hi, 16), 0xFFFFFFFF)
   end
   local base = wallpaperPath:match("([^/]+)%.[^.]+$") or "wp"
   local safeBase = base:gsub("[^%w_%-]", "_"):sub(1, 24)
@@ -52,7 +53,8 @@ end
 
 local function makeGenerateCmd(src, dst)
   return string.format(
-    "if command -v magick >/dev/null 2>&1; then nice -n 19 magick %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v convert >/dev/null 2>&1; then nice -n 19 convert %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v ffmpeg >/dev/null 2>&1; then nice -n 19 ffmpeg -y -i %s -vf \"scale=512:288:force_original_aspect_ratio=decrease\" %s >/dev/null 2>&1; fi",
+    "[ -d %s ] || mkdir -p %s; if command -v magick >/dev/null 2>&1; then nice -n 19 magick %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v convert >/dev/null 2>&1; then nice -n 19 convert %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v ffmpeg >/dev/null 2>&1; then nice -n 19 ffmpeg -y -i %s -vf \"scale=512:288:force_original_aspect_ratio=decrease\" %s >/dev/null 2>&1; fi",
+    shellQuote(cacheDir), shellQuote(cacheDir),
     shellQuote(src), shellQuote(dst),
     shellQuote(src), shellQuote(dst),
     shellQuote(src), shellQuote(dst)
@@ -91,7 +93,7 @@ local function triggerBatchThumbnails()
   for _, wp in ipairs(allWallpapers) do
     local thumb = getThumbPath(wp.path)
     if not noctalia.fileExists(thumb) then
-      table.insert(missing, wp.path .. "\t" .. thumb)
+      table.insert(missing, { src = wp.path, dst = thumb })
     end
   end
 
@@ -99,6 +101,7 @@ local function triggerBatchThumbnails()
   batchRunning = true
 
   local scriptParts = {
+    "[ -d " .. shellQuote(cacheDir) .. " ] || mkdir -p " .. shellQuote(cacheDir) .. "; ",
     "if command -v magick >/dev/null 2>&1; then GEN=magick; ",
     "elif command -v convert >/dev/null 2>&1; then GEN=convert; ",
     "elif command -v ffmpeg >/dev/null 2>&1; then GEN=ffmpeg; ",
@@ -106,13 +109,11 @@ local function triggerBatchThumbnails()
   }
 
   for _, item in ipairs(missing) do
-    local src, dst = item:match("([^\t]+)\t([^\t]+)")
-    if src and dst then
-      table.insert(scriptParts, string.format(
-        'if [ ! -f %s ]; then if [ "$GEN" = "ffmpeg" ]; then nice -n 19 ffmpeg -y -i %s -vf "scale=512:288:force_original_aspect_ratio=decrease" %s >/dev/null 2>&1; else nice -n 19 "$GEN" %s -thumbnail 512x288\\> %s >/dev/null 2>&1; fi; fi; ',
-        shellQuote(dst), shellQuote(src), shellQuote(dst), shellQuote(src), shellQuote(dst)
-      ))
-    end
+    local src, dst = item.src, item.dst
+    table.insert(scriptParts, string.format(
+      'if [ ! -f %s ]; then if [ "$GEN" = "ffmpeg" ]; then nice -n 19 ffmpeg -y -i %s -vf "scale=512:288:force_original_aspect_ratio=decrease" %s >/dev/null 2>&1; else nice -n 19 "$GEN" %s -thumbnail 512x288\\> %s >/dev/null 2>&1; fi; fi; ',
+      shellQuote(dst), shellQuote(src), shellQuote(dst), shellQuote(src), shellQuote(dst)
+    ))
   end
 
   local batchCmd = table.concat(scriptParts)
@@ -239,7 +240,6 @@ local function loadWallpapers(forceRescan)
   end
 
   isScanning = true
-  scanError = nil
   local dir = getWallpaperDir()
   local list = {}
 
@@ -268,7 +268,6 @@ local function loadWallpapers(forceRescan)
         triggerBatchThumbnails()
       else
         allWallpapers = {}
-        scanError = tr("panel.empty")
       end
       refreshActiveWallpaper(function()
         syncSelectedIndexToActive()
@@ -410,10 +409,10 @@ render = function()
   end
 
   local wpLeft, idxLeft = getDisplayedWallpaperAt(-1)
-  local wpCenter, idxCenter = getDisplayedWallpaperAt(0)
+  local wpCenter = getDisplayedWallpaperAt(0)
   local wpRight, idxRight = getDisplayedWallpaperAt(1)
 
-  local isSelectedActive = (#allWallpapers > 0 and allWallpapers[selectedIndex].path == currentWallpaper)
+  local isSelectedActive = (allWallpapers[selectedIndex].path == currentWallpaper)
 
   local carouselRow = ui.row({
     align = "center",
