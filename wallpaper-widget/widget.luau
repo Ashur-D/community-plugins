@@ -55,7 +55,7 @@ end
 
 local lastScrollTime = 0
 
-function onScroll(axis, steps, startsGesture)
+function onScroll(axis, steps, _startsGesture)
   if axis ~= "vertical" then return end
   local now = os.clock()
   if now - lastScrollTime < 0.12 then

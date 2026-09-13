@@ -15,23 +15,14 @@
   },
   "panel": {
     "title": "Wallpaper Widget",
-    "random": "Random",
-    "prev": "Previous",
-    "next": "Next",
-    "refresh": "Refresh",
-    "close": "Close",
     "loading": "Loading wallpapers...",
     "active": "ACTIVE",
     "hint": "←  →  ↑  ↓ to browse   ·   Enter to apply   ·   Space for random   ·   Esc to close",
     "empty": "No wallpapers found in directory.",
-    "empty_hint": "Add images (.png, .jpg, .jpeg, .webp) to your wallpapers folder.",
-    "no_matches": "No wallpapers match your filter."
-  },
-  "widget": {
-    "tooltip": "Wallpaper Widget\nClick: Open Widget  ·  Scroll: Next/Prev  ·  Right-click: Random"
+    "empty_hint": "Add images (.png, .jpg, .jpeg, .webp) to your wallpapers folder."
   },
   "shortcut": {
-    "label": "Toggle Wallpaper Widget"
+    "label": "Wallpaper Widget"
   },
   "notify": {
     "switched": "Wallpaper Switched"

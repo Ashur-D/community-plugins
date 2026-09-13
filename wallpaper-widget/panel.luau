@@ -7,6 +7,7 @@ local scanError = nil
 local navToken = 0
 local generatingPending = {}
 local batchRunning = false
+local isOpen = false
 
 math.randomseed(math.floor((os.clock() * 1000000) % 2147483647) + os.time())
 
@@ -73,7 +74,7 @@ local function resolveDisplayPath(originalPath)
     local cmd = makeGenerateCmd(originalPath, thumb)
     noctalia.runAsync(cmd, function()
       generatingPending[originalPath] = nil
-      if noctalia.fileExists(thumb) and render then
+      if isOpen and noctalia.fileExists(thumb) and render then
         render()
       end
     end)
@@ -118,7 +119,7 @@ local function triggerBatchThumbnails()
 
   noctalia.runAsync(batchCmd, function()
     batchRunning = false
-    if render then
+    if isOpen and render then
       render()
     end
   end)
@@ -135,7 +136,6 @@ local function getWallpaperDir()
       return d
     end
   end
-  local home = noctalia.getenv("HOME") or "~"
   return home .. "/Pictures/wallpapers"
 end
 
@@ -246,7 +246,7 @@ local function loadWallpapers(forceRescan)
   scanDirRecursive(dir, list, 0)
 
   if #list == 0 then
-    local cmd = "find " .. shellQuote(dir) .. " -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \\) 2>/dev/null | sort -V"
+    local cmd = "find " .. shellQuote(dir) .. " -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \\) 2>/dev/null"
     noctalia.runAsync(cmd, function(result)
       isScanning = false
       if result and result.exitCode == 0 and result.stdout then
@@ -261,6 +261,9 @@ local function loadWallpapers(forceRescan)
             sortKey = makeSortKey(cname),
           })
         end
+        table.sort(fallbackList, function(a, b)
+          return a.sortKey < b.sortKey
+        end)
         allWallpapers = fallbackList
         triggerBatchThumbnails()
       else
@@ -269,7 +272,9 @@ local function loadWallpapers(forceRescan)
       end
       refreshActiveWallpaper(function()
         syncSelectedIndexToActive()
-        render()
+        if isOpen and render then
+          render()
+        end
       end)
     end, 4000)
   else
@@ -281,7 +286,9 @@ local function loadWallpapers(forceRescan)
     triggerBatchThumbnails()
     refreshActiveWallpaper(function()
       syncSelectedIndexToActive()
-      render()
+      if isOpen and render then
+        render()
+      end
     end)
   end
 end
@@ -314,8 +321,6 @@ local function applyRandom()
     applyWallpaper(allWallpapers[1].path)
     return
   end
-
-  math.randomseed(math.floor((os.clock() * 1000000) % 2147483647) + os.time())
 
   local curIdx = selectedIndex
   if currentWallpaper ~= "" then
@@ -352,7 +357,7 @@ local function scheduleDisplay()
   render()
 
   noctalia.runAsync({"sleep", "0.040"}, function()
-    if navToken == currentToken then
+    if isOpen and navToken == currentToken then
       displayedIndex = selectedIndex
       render()
     end
@@ -550,7 +555,7 @@ end
 
 local lastScrollTime = 0
 
-function onScroll(axis, steps, startsGesture)
+function onScroll(axis, steps, _startsGesture)
   if axis ~= "vertical" then return end
   if #allWallpapers == 0 then return end
   local now = os.clock()
@@ -565,6 +570,7 @@ function onScroll(axis, steps, startsGesture)
 end
 
 function onOpen(_context)
+  isOpen = true
   local active = getCurrentWallpaper()
   if active and active ~= "" then
     currentWallpaper = active
@@ -580,6 +586,7 @@ function onOpen(_context)
 end
 
 function onClose()
+  isOpen = false
 end
 
 loadWallpapers(false)

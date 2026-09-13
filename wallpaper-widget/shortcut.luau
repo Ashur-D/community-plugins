@@ -1,4 +1,4 @@
-shortcut.setLabel("Wallpaper Widget")
+shortcut.setLabel(noctalia.tr("shortcut.label"))
 shortcut.setIcon("image")
 
 function onClick()
