@@ -28,10 +28,10 @@ local function updateTooltip()
     current = active:match("([^/]+)$") or active
   end
   barWidget.setTooltip({
-    { key = "Wallpaper Widget", value = current ~= "" and current or "Open carousel" },
-    { key = "Click", value = "Toggle panel" },
-    { key = "Scroll", value = "Next / previous" },
-    { key = "Right-click", value = "Random" },
+    { key = tr("panel.title"), value = current ~= "" and current or tr("widget.open") },
+    { key = tr("widget.click"), value = tr("widget.toggle_panel") },
+    { key = tr("widget.scroll"), value = tr("widget.scroll_hint") },
+    { key = tr("widget.right_click"), value = tr("widget.random_hint") },
   })
 end
 

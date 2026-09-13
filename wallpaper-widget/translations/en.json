@@ -24,6 +24,15 @@
   "shortcut": {
     "label": "Wallpaper Widget"
   },
+  "widget": {
+    "open": "Open carousel",
+    "click": "Click",
+    "toggle_panel": "Toggle panel",
+    "scroll": "Scroll",
+    "scroll_hint": "Next / previous",
+    "right_click": "Right-click",
+    "random_hint": "Random"
+  },
   "notify": {
     "switched": "Wallpaper Switched"
   }
