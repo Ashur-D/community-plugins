@@ -527,30 +527,6 @@ function onKey(chord, pressed)
     stepSelection(-1)
   elseif chord == "Right" or chord == "Down" then
     stepSelection(1)
-  elseif chord == "PageUp" then
-    stepSelection(-5)
-  elseif chord == "PageDown" then
-    stepSelection(5)
-  elseif chord == "Home" then
-    if #allWallpapers > 0 then
-      selectedIndex = 1
-      if cardsCached(1) then
-        displayedIndex = 1
-        render()
-      else
-        scheduleDisplay()
-      end
-    end
-  elseif chord == "End" then
-    if #allWallpapers > 0 then
-      selectedIndex = #allWallpapers
-      if cardsCached(#allWallpapers) then
-        displayedIndex = #allWallpapers
-        render()
-      else
-        scheduleDisplay()
-      end
-    end
   elseif chord == "Return" then
     if #allWallpapers > 0 and selectedIndex >= 1 and selectedIndex <= #allWallpapers then
       displayedIndex = selectedIndex

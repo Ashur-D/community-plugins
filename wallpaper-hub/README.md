@@ -24,7 +24,7 @@ noctalia msg panel-toggle ashur-d/wallpaper-hub:hub
 
 - **Cinematic Carousel**: Focus on your wallpapers with an active center spotlight card and adjacent previews.
 - **Active Indicator**: The currently active wallpaper is highlighted with a primary accent border and active badge.
-- **Fast Keyboard Navigation**: Browse with `Left` / `Right` arrows, jump with `PageUp` / `PageDown` or `Home` / `End`, and apply with `Enter`.
+- **Fast Keyboard Navigation**: Browse with arrow keys (`Left` / `Right` / `Up` / `Down`), and apply with `Enter`.
 - **Quick Actions**: Press `Space` or `r` to instantly apply a random wallpaper, or `F5` to rescan.
 - **Instant Switch**: Uses in-process wallpaper switching for seamless transitions with zero latency.
 
