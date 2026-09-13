@@ -23,6 +23,13 @@ label_key = "settings.notify_on_change.label"
 description_key = "settings.notify_on_change.description"
 default = true
 
+[[setting]]
+key = "close_on_apply"
+type = "bool"
+label_key = "settings.close_on_apply.label"
+description_key = "settings.close_on_apply.description"
+default = false
+
 [[panel]]
 id = "hub"
 entry = "panel.luau"

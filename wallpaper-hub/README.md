@@ -62,6 +62,7 @@ Configure Wallpaper Hub in **Settings -> Plugins -> Wallpaper Hub**:
 | --- | --- | --- | --- |
 | `wallpaper_dir` | `folder` | *(empty)* | Path to your wallpapers directory. Leave empty to automatically use Noctalia's configured wallpaper folder. |
 | `notify_on_change` | `bool` | `true` | Send a desktop notification whenever the wallpaper is switched. |
+| `close_on_apply` | `bool` | `false` | Automatically close the Wallpaper Hub carousel after applying a wallpaper. |
 
 ## License
 

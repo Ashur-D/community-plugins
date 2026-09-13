@@ -7,6 +7,10 @@
     "notify_on_change": {
       "label": "Notify on Change",
       "description": "Show a desktop notification when the wallpaper changes."
+    },
+    "close_on_apply": {
+      "label": "Close on Apply",
+      "description": "Automatically close the Wallpaper Hub carousel after applying a wallpaper."
     }
   },
   "panel": {

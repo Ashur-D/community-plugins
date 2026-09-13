@@ -11,6 +11,8 @@ local navToken = 0
 local generatingPending = {}
 local batchRunning = false
 
+math.randomseed(math.floor((os.clock() * 1000000) % 2147483647) + os.time())
+
 local function tr(key, args)
   return noctalia.tr(key, args)
 end
@@ -305,11 +307,39 @@ local function applyWallpaper(path)
     local fname = path:match("([^/]+)$") or path
     noctalia.notify(tr("panel.title"), tr("notify.switched") .. ": " .. fname)
   end
+
+  if noctalia.getConfig("close_on_apply") == true then
+    panel.close()
+  end
 end
 
 local function applyRandom()
   if #allWallpapers == 0 then return end
-  local randIdx = math.random(1, #allWallpapers)
+  if #allWallpapers == 1 then
+    selectedIndex = 1
+    displayedIndex = 1
+    applyWallpaper(allWallpapers[1].path)
+    return
+  end
+
+  -- Re-seed PRNG with high-resolution clock to guarantee fresh entropy
+  math.randomseed(math.floor((os.clock() * 1000000) % 2147483647) + os.time())
+
+  -- Sync with currently active wallpaper so we never pick the one currently active
+  local curIdx = selectedIndex
+  if currentWallpaper ~= "" then
+    for i, wp in ipairs(allWallpapers) do
+      if wp.path == currentWallpaper then
+        curIdx = i
+        break
+      end
+    end
+  end
+
+  -- Pick from the remaining #allWallpapers - 1 wallpapers
+  local offset = math.random(1, #allWallpapers - 1)
+  local randIdx = ((curIdx - 1 + offset) % #allWallpapers) + 1
+
   selectedIndex = randIdx
   displayedIndex = randIdx
   applyWallpaper(allWallpapers[randIdx].path)
