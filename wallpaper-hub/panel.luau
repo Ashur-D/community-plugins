@@ -27,8 +27,8 @@ local function makeSortKey(s)
 end
 
 -- Resolve cache directory for downscaled thumbnails
-local home = (noctalia.getenv and noctalia.getenv("HOME")) or os.getenv("HOME") or "/tmp"
-local xdgCache = (noctalia.getenv and noctalia.getenv("XDG_CACHE_HOME")) or os.getenv("XDG_CACHE_HOME")
+local home = noctalia.getenv("HOME") or "~"
+local xdgCache = noctalia.getenv("XDG_CACHE_HOME")
 local cacheDir = (xdgCache and xdgCache ~= "" and xdgCache or (home .. "/.cache")) .. "/noctalia/wallpaper-hub/thumbnails"
 
 local cacheDirPrepared = false
@@ -54,7 +54,7 @@ end
 
 local function makeGenerateCmd(src, dst)
   return string.format(
-    "nice -n 19 sh -c 'if command -v magick >/dev/null 2>&1; then magick %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v convert >/dev/null 2>&1; then convert %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v ffmpeg >/dev/null 2>&1; then ffmpeg -y -i %s -vf \"scale=512:288:force_original_aspect_ratio=decrease\" %s >/dev/null 2>&1; fi'",
+    "if command -v magick >/dev/null 2>&1; then nice -n 19 magick %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v convert >/dev/null 2>&1; then nice -n 19 convert %s -thumbnail 512x288\\> %s >/dev/null 2>&1; elif command -v ffmpeg >/dev/null 2>&1; then nice -n 19 ffmpeg -y -i %s -vf \"scale=512:288:force_original_aspect_ratio=decrease\" %s >/dev/null 2>&1; fi",
     shellQuote(src), shellQuote(dst),
     shellQuote(src), shellQuote(dst),
     shellQuote(src), shellQuote(dst)
@@ -77,7 +77,7 @@ local function resolveDisplayPath(originalPath)
     local cmd = makeGenerateCmd(originalPath, thumb)
     noctalia.runAsync(cmd, function()
       generatingPending[originalPath] = nil
-      if noctalia.fileExists(thumb) then
+      if noctalia.fileExists(thumb) and render then
         render()
       end
     end)
@@ -102,7 +102,6 @@ local function triggerBatchThumbnails()
   batchRunning = true
 
   local scriptParts = {
-    "nice -n 19 sh -c '",
     "if command -v magick >/dev/null 2>&1; then GEN=magick; ",
     "elif command -v convert >/dev/null 2>&1; then GEN=convert; ",
     "elif command -v ffmpeg >/dev/null 2>&1; then GEN=ffmpeg; ",
@@ -113,18 +112,19 @@ local function triggerBatchThumbnails()
     local src, dst = item:match("([^\t]+)\t([^\t]+)")
     if src and dst then
       table.insert(scriptParts, string.format(
-        'if [ ! -f %s ]; then if [ "$GEN" = "ffmpeg" ]; then ffmpeg -y -i %s -vf "scale=512:288:force_original_aspect_ratio=decrease" %s >/dev/null 2>&1; else "$GEN" %s -thumbnail 512x288\\> %s >/dev/null 2>&1; fi; fi; ',
+        'if [ ! -f %s ]; then if [ "$GEN" = "ffmpeg" ]; then nice -n 19 ffmpeg -y -i %s -vf "scale=512:288:force_original_aspect_ratio=decrease" %s >/dev/null 2>&1; else nice -n 19 "$GEN" %s -thumbnail 512x288\\> %s >/dev/null 2>&1; fi; fi; ',
         shellQuote(dst), shellQuote(src), shellQuote(dst), shellQuote(src), shellQuote(dst)
       ))
     end
   end
 
-  table.insert(scriptParts, "'")
   local batchCmd = table.concat(scriptParts)
 
   noctalia.runAsync(batchCmd, function()
     batchRunning = false
-    render()
+    if render then
+      render()
+    end
   end)
 end
 
@@ -195,8 +195,6 @@ local function scanDirRecursive(dir, list, depth)
     end
   end
 end
-
-local render -- forward declaration
 
 local function getDisplayedWallpaperAt(offset)
   local total = #allWallpapers
