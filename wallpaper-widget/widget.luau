@@ -27,11 +27,12 @@ local function updateTooltip()
   if active and active ~= "" then
     current = active:match("([^/]+)$") or active
   end
-  local tooltip = tr("widget.tooltip")
-  if current ~= "" then
-    tooltip = current .. "\n\n" .. tooltip
-  end
-  barWidget.setTooltip(tooltip)
+  barWidget.setTooltip({
+    { key = "Wallpaper Widget", value = current ~= "" and current or "Open carousel" },
+    { key = "Click", value = "Toggle panel" },
+    { key = "Scroll", value = "Next / previous" },
+    { key = "Right-click", value = "Random" },
+  })
 end
 
 function update()
