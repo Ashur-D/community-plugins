@@ -571,9 +571,14 @@ function onKey(chord, pressed)
   end
 end
 
+local lastScrollTime = 0
+
 function onScroll(axis, steps, startsGesture)
-  if axis ~= "vertical" or startsGesture then return end
+  if axis ~= "vertical" then return end
   if #allWallpapers == 0 then return end
+  local now = os.clock()
+  if now - lastScrollTime < 0.12 then return end
+  lastScrollTime = now
 
   if (steps or 0) > 0 then
     stepSelection(1)

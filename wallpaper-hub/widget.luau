@@ -58,9 +58,9 @@ end
 local lastScrollTime = 0
 
 function onScroll(axis, steps, startsGesture)
-  if axis ~= "vertical" or startsGesture then return end
+  if axis ~= "vertical" then return end
   local now = os.clock()
-  if now - lastScrollTime < 0.15 then
+  if now - lastScrollTime < 0.12 then
     return -- Debounce rapid scroll bursts
   end
   lastScrollTime = now
