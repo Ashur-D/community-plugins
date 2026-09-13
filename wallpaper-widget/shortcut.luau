@@ -1,6 +1,3 @@
---!nonstrict
--- Wallpaper Widget — Shortcut tile for toggling the hub
-
 shortcut.setLabel("Wallpaper Widget")
 shortcut.setIcon("image")
 

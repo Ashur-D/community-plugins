@@ -1,6 +1,3 @@
---!nonstrict
--- Wallpaper Widget — Cinematic 3-card horizontal carousel wallpaper switcher
-
 local selectedIndex = 1
 local displayedIndex = 1
 local allWallpapers = {}
@@ -28,7 +25,6 @@ local function makeSortKey(s)
   end)
 end
 
--- Resolve cache directory for downscaled thumbnails
 local home = noctalia.getenv("HOME") or "~"
 local xdgCache = noctalia.getenv("XDG_CACHE_HOME")
 local cacheDir = (xdgCache and xdgCache ~= "" and xdgCache or (home .. "/.cache")) .. "/noctalia/wallpaper-widget/thumbnails"
@@ -42,7 +38,6 @@ local function ensureCacheDir()
   end
 end
 
--- Deterministic FNV-1a hash for wallpaper thumbnails
 local function getThumbPath(wallpaperPath)
   local h = 2166136261
   for i = 1, #wallpaperPath do
@@ -63,7 +58,7 @@ local function makeGenerateCmd(src, dst)
   )
 end
 
-local render -- forward declaration
+local render
 
 local function resolveDisplayPath(originalPath)
   if not originalPath or originalPath == "" then return originalPath end
@@ -73,7 +68,6 @@ local function resolveDisplayPath(originalPath)
     return thumb
   end
 
-  -- On-demand generation for immediate preview if missing from cache
   if not generatingPending[originalPath] then
     generatingPending[originalPath] = true
     local cmd = makeGenerateCmd(originalPath, thumb)
@@ -296,7 +290,6 @@ local function applyWallpaper(path)
   currentWallpaper = path
   render()
 
-  -- Instant in-process application without subprocess latency
   if noctalia.setWallpaper then
     noctalia.setWallpaper(path)
   else
@@ -322,10 +315,8 @@ local function applyRandom()
     return
   end
 
-  -- Re-seed PRNG with high-resolution clock to guarantee fresh entropy
   math.randomseed(math.floor((os.clock() * 1000000) % 2147483647) + os.time())
 
-  -- Sync with currently active wallpaper so we never pick the one currently active
   local curIdx = selectedIndex
   if currentWallpaper ~= "" then
     for i, wp in ipairs(allWallpapers) do
@@ -336,7 +327,6 @@ local function applyRandom()
     end
   end
 
-  -- Pick from the remaining #allWallpapers - 1 wallpapers
   local offset = math.random(1, #allWallpapers - 1)
   local randIdx = ((curIdx - 1 + offset) % #allWallpapers) + 1
 
@@ -359,10 +349,8 @@ local function scheduleDisplay()
   navToken = navToken + 1
   local currentToken = navToken
 
-  -- Update index counter and badge immediately with zero input latency
   render()
 
-  -- Fallback debounce for heavy full-resolution images while thumbnails generate
   noctalia.runAsync({"sleep", "0.040"}, function()
     if navToken == currentToken then
       displayedIndex = selectedIndex
@@ -376,7 +364,6 @@ local function stepSelection(delta)
   if total == 0 then return end
   selectedIndex = ((selectedIndex - 1 + delta) % total) + 1
 
-  -- Instant 60 FPS update when thumbnails are cached; debounce only if unbuilt full-res
   if cardsCached(selectedIndex) then
     displayedIndex = selectedIndex
     render()
@@ -423,14 +410,12 @@ render = function()
 
   local isSelectedActive = (#allWallpapers > 0 and allWallpapers[selectedIndex].path == currentWallpaper)
 
-  -- Cinematic 3-Card Carousel
   local carouselRow = ui.row({
     align = "center",
     justify = "center",
     gap = 20,
     flexGrow = 1,
   }, {
-    -- Previous Wallpaper Preview (Left)
     ui.column({
       key = "card-left",
       align = "center",
@@ -454,7 +439,6 @@ render = function()
       }),
     }),
 
-    -- Current Focused Wallpaper (Center Spotlight)
     ui.column({
       key = "card-center",
       align = "center",
@@ -475,7 +459,6 @@ render = function()
       }),
     }),
 
-    -- Next Wallpaper Preview (Right)
     ui.column({
       key = "card-right",
       align = "center",
@@ -500,12 +483,10 @@ render = function()
     }),
   })
 
-  -- Info & Controls Section below cards
   local infoSection = ui.column({
     align = "center",
     gap = 4,
   }, {
-    -- Active badge row
     ui.row({
       align = "center",
       justify = "center",
@@ -524,14 +505,12 @@ render = function()
       }) or nil,
     }),
 
-    -- Index counter (reflects selected index in real time)
     ui.label({
       text = tostring(selectedIndex) .. " / " .. tostring(#allWallpapers),
       fontSize = 12,
       color = "on_surface_variant",
     }),
 
-    -- Navigation hints
     ui.label({
       text = tr("panel.hint"),
       fontSize = 11,
@@ -592,7 +571,6 @@ function onOpen(_context)
     syncSelectedIndexToActive()
   end
 
-  -- If we already have wallpapers in memory, render immediately with 0ms delay!
   if #allWallpapers > 0 then
     displayedIndex = selectedIndex
     render()
@@ -604,5 +582,4 @@ end
 function onClose()
 end
 
--- Warm up cache immediately upon plugin script load
 loadWallpapers(false)

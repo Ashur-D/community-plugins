@@ -1,6 +1,3 @@
---!nonstrict
--- Wallpaper Widget — Bar widget
-
 local function tr(key, args)
   return noctalia.tr(key, args)
 end
@@ -61,7 +58,7 @@ function onScroll(axis, steps, startsGesture)
   if axis ~= "vertical" then return end
   local now = os.clock()
   if now - lastScrollTime < 0.12 then
-    return -- Debounce rapid scroll bursts
+    return
   end
   lastScrollTime = now
 
